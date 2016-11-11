@@ -1,0 +1,75 @@
+; ASM80	
+; Display number in binary form using lookup table.
+	JMP start
+
+number:
+	DB 0x42	; number to convert
+
+.org 0x0010
+lookup:	
+	DB '0000'
+	DB '0001' 
+	DB '0010'
+	DB '0011' 
+	DB '0100'
+	DB '0101' 
+	DB '0110'
+	DB '0111'
+	DB '1000'
+	DB '1001' 
+	DB '1010'
+	DB '1011' 
+	DB '1100'
+	DB '1101' 
+	DB '1110'
+	DB '1111'   
+   
+start:
+	; Lookup address
+	MVI D, lookup
+
+	; Convert high nibble
+	LDA number
+	RRC
+	RRC
+	RRC
+	RRC
+    ANI 0x0F
+
+	CALL convert
+
+	; Convert low nibble
+	LDA number
+	ANI 0x0F
+
+	CALL convert
+
+end:
+	HLT
+	
+convert:
+	; Find offset by multipling A by 4 (shift left) 
+	RLC
+	RLC
+	ANI 0xFC
+
+	; Add lookup address to offset
+	ADD D
+
+display:
+	; Fill BC with address of proper lookup row  
+	MVI B, 0 
+	MOV C, A
+
+	LDAX B	; First bit
+
+	INX	B
+	LDAX B	; Second bit
+
+	INX	B
+	LDAX B	; Third bit
+
+	INX	B
+	LDAX B	; Fourth bit
+
+	RET
